@@ -4,59 +4,67 @@
 <meta charset="utf-8">
 <title>Get moving button</title>
 <style>
-  :root {
-    --bg: #0f0628;
-    --btn-idle: #1d1140;
-    --btn-hover: #6d28d9;
-    --spotlight: #ffd1f2;
-    --spotlight-mid: #c084fc;
-    --text: #0a0420;
-    --glow: rgba(139, 92, 246, 0.55);
-  }
-
   html, body {
     height: 100%;
     margin: 0;
-    background: var(--bg);
+    background: #0f0628;
     display: grid;
     place-items: center;
     font-family: -apple-system, "Inter", system-ui, sans-serif;
   }
 
+  .cta-border-wrap {
+    padding: 1px;
+    border-radius: 16px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0));
+  }
+
   .cta {
     position: relative;
-    isolation: isolate;
-    padding: 16px 34px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
-    background: var(--btn-idle);
-    color: var(--text);
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
     cursor: pointer;
     outline: none;
-    overflow: hidden;
+    background: transparent;
     box-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    transition:
-      background 420ms ease,
-      color 420ms ease,
-      box-shadow 420ms ease,
-      transform 420ms ease;
+      0 87px 24px 0 rgba(0, 0, 0, 0.00),
+      0 56px 22px 0 rgba(0, 0, 0, 0.01),
+      0 31px 19px 0 rgba(0, 0, 0, 0.05),
+      0 14px 14px 0 rgba(0, 0, 0, 0.09),
+      0 3px 8px 0 rgba(0, 0, 0, 0.10);
+    transition: transform 150ms ease;
   }
 
-  .cta span {
-    position: relative;
-    z-index: 1;
-    transition: color 420ms ease;
-    color: rgba(255, 255, 255, 0.28);
+  /* Layer 1: solid purple background */
+  .cta-bg {
+    position: absolute;
+    inset: 0;
+    background: #6032e2;
+    border-radius: 8px;
+    pointer-events: none;
   }
 
-  .cta::before {
+  /* Layer 2: static centered glow */
+  .cta-static-glow {
+    position: absolute;
+    left: calc(50% - 0.5px);
+    top: calc(50% - 1px);
+    width: 90%;
+    height: 70%;
+    background: #d6c5f9be;
+    filter: blur(8px);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* Layer 3: cursor-tracking spotlight */
+  .cta-cursor-glow {
     --size: 0;
-    content: "";
     position: absolute;
     left: var(--x, 50%);
     top: var(--y, 50%);
@@ -64,43 +72,58 @@
     height: var(--size);
     background: radial-gradient(
       circle closest-side,
-      var(--spotlight) 0%,
-      var(--spotlight-mid) 35%,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(214, 197, 249, 0.45) 35%,
+      rgba(249, 197, 184, 0.3) 60%,
       transparent 75%
     );
     transform: translate(-50%, -50%);
-    transition: width 360ms ease, height 360ms ease;
+    transition: width 300ms ease, height 300ms ease;
     pointer-events: none;
-    z-index: 0;
   }
 
-  .cta:hover {
-    background: var(--btn-hover);
-    box-shadow:
-      0 14px 40px -8px var(--glow),
-      0 6px 18px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
+  /* Layer 4: text */
+  .cta span {
+    position: relative;
+    z-index: 1;
+    color: #170d33;
+    font-size: 18px;
+    font-weight: 400;
+    white-space: nowrap;
   }
 
-  .cta:hover span { color: var(--text); }
+  /* Layer 5: inset shadow overlay — on top of everything */
+  .cta-inset {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0px 1px 2px 0px rgba(0, 0, 0, 0.144);
+    pointer-events: none;
+  }
 
-  .cta:hover::before { --size: 340px; }
+  .cta:hover .cta-cursor-glow { --size: 160px; }
 
-  .cta:active { transform: translateY(0); }
+  .cta:active { transform: translateY(1px); }
 </style>
 </head>
 <body>
+  <div class="cta-border-wrap">
   <button class="cta" type="button">
-    <span>Get moving</span>
+    <div class="cta-bg" aria-hidden="true"></div>
+    <div class="cta-static-glow" aria-hidden="true"></div>
+    <div class="cta-cursor-glow" aria-hidden="true"></div>
+    <span>Get Moving</span>
+    <div class="cta-inset" aria-hidden="true"></div>
   </button>
+  </div>
 
   <script>
     const btn = document.querySelector(".cta");
+    const cursorGlow = btn.querySelector(".cta-cursor-glow");
     btn.addEventListener("pointermove", (e) => {
       const r = btn.getBoundingClientRect();
-      btn.style.setProperty("--x", (e.clientX - r.left) + "px");
-      btn.style.setProperty("--y", (e.clientY - r.top) + "px");
+      cursorGlow.style.setProperty("--x", (e.clientX - r.left) + "px");
+      cursorGlow.style.setProperty("--y", (e.clientY - r.top) + "px");
     });
   </script>
 </body>
